@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Vapourize Collective • Application Node</title>
+  <meta name="description" content="Secure digital extraction services. Submit your application for complete digital disappearance and protection protocols." />
+  <meta name="author" content="Vapourize Collective" />
+  <style>
+    body, html {margin:0; padding:0; height:100%; font-family:"Consolas","Courier New",monospace; color:#e0e0e0; overflow-x:hidden;}
+    canvas#matrix {position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; background:black;}
+    body {display:flex; flex-direction:column; align-items:center;}
+    header {text-align:center; padding:60px 20px 30px 20px;}
+    .logo {width:120px; height:120px; background:linear-gradient(135deg, #00ff00, #ff1744); clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%); margin:0 auto 20px auto; box-shadow:0 0 35px rgba(0,255,0,0.7),0 0 35px rgba(255,23,68,0.7); animation:glitch 2.5s infinite;}
+    @keyframes glitch {0%{transform:translate(0,0);}20%{transform:translate(-2px,2px);}40%{transform:translate(2px,-2px);}60%{transform:translate(-1px,1px);}80%{transform:translate(1px,-1px);}100%{transform:translate(0,0);}}
+    h1 {font-size:3rem; color:#00ff00; text-shadow:0 0 15px #00ff00,0 0 20px #ff1744; margin:15px 0; letter-spacing:2px;}
+    .header-teaser {font-size:1rem; line-height:1.6; margin-bottom:30px; color:#aaffaa;}
+    .panel {background: rgba(0,0,0,0.85); border:1px solid #003300; border-radius:12px; max-width:900px; width:90%; margin:25px; padding:35px; box-shadow:0 0 50px rgba(0,255,0,0.5),0 0 50px rgba(255,23,68,0.5);}
+    .panel h2 {font-size:1.6rem; margin-bottom:20px; color:#00ff00; border-bottom:1px solid #003300; padding-bottom:8px;}
+    form {display:flex; flex-direction:column; gap:20px;}
+    label {font-size:0.95rem; color:#aaffaa;}
+    input, textarea {padding:12px; border-radius:6px; border:none; background:rgba(0,20,0,0.85); color:#e0ffe0; font-family:"Consolas","Courier New",monospace; font-size:0.95rem; outline:none;}
+    textarea {resize:none; height:100px;}
+    button {padding:14px 28px; background:#00ff00; color:#000; font-weight:bold; border:none; border-radius:6px; cursor:pointer; font-size:1rem; transition:0.3s; box-shadow:0 0 15px rgba(0,255,0,0.6),0 0 15px rgba(255,23,68,0.4);}
+    button[disabled]{opacity:0.65; cursor:not-allowed;}
+    button:hover {background:#88ff88; box-shadow:0 0 25px rgba(0,255,0,0.9),0 0 25px rgba(255,23,68,0.6);}
+    a.back-btn {display:inline-block; margin-top:20px; color:#00ff00; text-decoration:none; font-size:0.95rem;}
+    a.back-btn:hover {text-decoration:underline;}
+    footer {margin:40px 0 20px 0; font-size:0.85rem; color:#666; text-align:center;}
+    #status {font-family:"Courier New",monospace;color:#aaffaa;margin-top:6px;}
+    @media (max-width:520px){ h1{font-size:2rem} .panel{padding:20px} }
+  </style>
+</head>
+<body>
+  <canvas id="matrix" aria-hidden="true"></canvas>
+  <header>
+    <div class="logo" aria-hidden="true"></div>
+    <h1>Vapourize Collective</h1>
+    <div class="header-teaser" aria-hidden="true">
+      <span>• Want to vanish without a trace? — <strong>secure your codename now</strong></span><br>
+      <span>• Digital footprints erased or hidden — <strong>choose your extraction path</strong></span><br>
+      <span>• All requests monitored securely until completion — <strong>submission triggers the protocol</strong></span><br>
+      <span>• Only serious operatives proceed — <strong>your alias is your key</strong></span>
+    </div>
+  </header>
+
+  <div class="panel" role="main" aria-labelledby="formTitle">
+    <h2 id="formTitle">Application Form</h2>
+    <form id="appForm" novalidate>
+      <label for="alias">Alias / Codename:</label>
+      <input type="text" id="alias" name="alias" placeholder="Enter your operative codename" required>
+
+      <label for="email">Secure Contact Email:</label>
+      <input type="email" id="email" name="email" placeholder="encrypted@example.com" required>
+
+      <label for="phone">Contact Number (optional):</label>
+      <input type="text" id="phone" name="phone" placeholder="+00-000-000-000">
+
+      <label for="reason">Reason / Threat Description:</label>
+      <textarea id="reason" name="reason" placeholder="Briefly describe why you require disappearance or protection" required></textarea>
+
+      <label for="timeline">Preferred Timeline for Extraction:</label>
+      <input type="text" id="timeline" name="timeline" placeholder="Immediate / Within 72 hours / Flexible" required>
+
+      <label for="additional">Additional Notes / Operational Details:</label>
+      <textarea id="additional" name="additional" placeholder="Any extra info for your safe extraction"></textarea>
+
+      <div style="display:flex;flex-direction:column;align-items:flex-start">
+        <button type="submit" id="submitBtn">Submit Application</button>
+        <div id="status" aria-live="polite"></div>
+      </div>
+    </form>
+    <a class="back-btn" href="faq.html">← Return to FAQ</a>
+  </div>
+
+  <footer>
+    &copy; 2025 Vapourize Collective • All Rights Reserved
+  </footer>
+
+  <script>
+    // ---------- Matrix Canvas Script (unchanged) ----------
+    const canvas = document.getElementById("matrix");
+    const ctx = canvas.getContext("2d");
+    const fontSize = 16;
+    const letters = "アカサタナハマヤラワ0123456789$#%&ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let cols = Math.floor(window.innerWidth / fontSize);
+    let drops = Array(cols).fill(1);
+    function resizeCanvas(){
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      cols = Math.floor(canvas.width / fontSize);
+      drops = Array(cols).fill(1);
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+    function drawMatrix(){
+      ctx.fillStyle = "rgba(0,0,0,0.05)";
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      for(let i=0;i<drops.length;i++){
+        const text = letters.charAt(Math.floor(Math.random()*letters.length));
+        ctx.fillStyle = Math.random()>0.5 ? "#00ff00" : "#ff1744";
+        ctx.font = fontSize + "px monospace";
+        ctx.fillText(text,i*fontSize,drops[i]*fontSize);
+        if(drops[i]*fontSize > canvas.height && Math.random()>0.975) drops[i]=0;
+        drops[i]++;
+      }
+    }
+    setInterval(drawMatrix,33);
+  </script>
+
+  <!-- ---------- Submission script (posts to your Apps Script doPost) ---------- -->
+  <script>
+    // ----- CONFIG -----
+    // Replace these values before deploying
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxnVv3hbpuaZdkGd8zko-gRDWA2ywuL6zj-OE2fCsnjFpOVZfw23AM8vMppyKBir1Sz/exec"; // <-- replace with your /exec URL
+    const DEBUG = false; // set true to enable console logs
+
+    const form = document.getElementById('appForm');
+    const statusEl = document.getElementById('status');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function getFormPayload() {
+      return {
+        alias: document.getElementById('alias').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        reason: document.getElementById('reason').value.trim(),
+        timeline: document.getElementById('timeline').value.trim(),
+        additional: document.getElementById('additional').value.trim(),
+        submissionIP: "",
+        userAgent: navigator.userAgent || "",
+        origin: window.location.origin || "",
+        created_at: new Date().toISOString()
+      };
+    }
+
+    function validate(payload){
+      if(!payload.alias) return "Alias is required.";
+      if(!payload.email) return "Email is required.";
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) return "Please enter a valid email.";
+      if(!payload.reason) return "Please provide a reason or threat description.";
+      if(!payload.timeline) return "Please state a preferred timeline.";
+      return null;
+    }
+
+    // Obtain client IP via a public IP API (fallback to empty string)
+    async function resolveClientIP(timeoutMs = 3000) {
+      try {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeoutMs);
+        const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
+        clearTimeout(id);
+        if (!res.ok) return "";
+        const json = await res.json().catch(()=>({ip:""}));
+        return json.ip || "";
+      } catch (err) {
+        if (DEBUG) console.warn('IP resolution failed', err);
+        return "";
+      }
+    }
+
+    // POST using form-encoded body to avoid CORS preflight
+    async function postToGAS(payload) {
+      try {
+        const body = new URLSearchParams();
+        for (const k in payload) {
+          if (Object.prototype.hasOwnProperty.call(payload, k)) {
+            body.append(k, payload[k]);
+          }
+        }
+
+        const r = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+          },
+          body: body.toString()
+        });
+
+        const json = await r.json().catch(() => ({ status: "error", message: "Invalid JSON from GAS", statusCode: r.status }));
+        if (DEBUG) console.log('GAS response', r.status, json);
+        return { ok: true, status: r.status, json };
+      } catch (err) {
+        if (DEBUG) console.error('postToGAS error', err);
+        return { ok: false, error: String(err) };
+      }
+    }
+
+    async function handleSubmit(e){
+      e.preventDefault();
+      submitBtn.disabled = true;
+      statusEl.textContent = "Preparing submission...";
+
+      const payload = getFormPayload();
+      const validationError = validate(payload);
+      if (validationError) {
+        statusEl.textContent = "Error: " + validationError;
+        submitBtn.disabled = false;
+        return;
+      }
+
+      statusEl.textContent = "Resolving IP address...";
+      payload.submissionIP = await resolveClientIP();
+
+      statusEl.textContent = "Submitting securely...";
+      const result = await postToGAS(payload);
+
+      if (!result.ok) {
+        console.error('Submission failed', result);
+        sessionStorage.setItem('vcSubmission', JSON.stringify({ ...payload, saved_remote: false, error: result.error }));
+        statusEl.textContent = "Network error — saved locally. Redirecting...";
+        setTimeout(()=> window.location.replace('thankyou.html'), 700);
+        return;
+      }
+
+      const body = result.json || {};
+      if (body && body.status === "success") {
+        sessionStorage.setItem('vcSubmission', JSON.stringify({ ...payload, saved_remote: true, serverResponse: body }));
+        statusEl.textContent = "Submission received. Redirecting...";
+        setTimeout(()=> window.location.replace('thankyou.html'), 600);
+        return;
+      } else {
+        console.warn('Server returned error or unexpected data', body);
+        sessionStorage.setItem('vcSubmission', JSON.stringify({ ...payload, saved_remote: false, serverResponse: body }));
+        statusEl.textContent = "Server error — saved locally. Redirecting...";
+        setTimeout(()=> window.location.replace('thankyou.html'), 700);
+        return;
+      }
+    }
+
+    form.addEventListener('submit', handleSubmit);
+  </script>
